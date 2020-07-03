@@ -4,6 +4,7 @@ import pickle
 from sklearn import linear_model
 import scipy.stats as stat
 pd.options.display.max_columns = None
+#import requests
 
 import dash
 import dash_core_components as dcc
@@ -16,20 +17,6 @@ ENV = 'dev'
 external_stylesheets = ['https://codepen.io/davifoga/pen/jOWYyyG.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-if ENV == 'dev':
-    debug = True
-    # loan_data_inputs_pd_temp = pd.read_csv('D:\Davide\loan_data_inputs_test.csv')
-    file_pd = 'pd_model.sav'
-    file_st_1 = 'lgd_model_stage_1.sav'
-    file_st_2 = 'lgd_model_stage_2.sav'
-    file_ead = 'reg_ead.sav'
-else:
-    server = app.server
-    file_pd = 'https://credit-df.s3.eu-north-1.amazonaws.com/pd_model.sav'
-    file_st_1 = 'https://credit-df.s3.eu-north-1.amazonaws.com/lgd_model_stage_1.sav'
-    file_st_2 = 'https://credit-df.s3.eu-north-1.amazonaws.com/lgd_model_stage_2.sav'
-    file_ead = 'https://credit-df.s3.eu-north-1.amazonaws.com/reg_ead.sav'
-    debug = False
 
 class LogisticRegression_with_p_values:
     def __init__(self,*args,**kwargs):#,**kwargs):
@@ -87,6 +74,38 @@ class LinearRegression(linear_model.LinearRegression):
         # find the p-value for each feature
         self.p = np.squeeze(2 * (1 - stat.t.cdf(np.abs(self.t), y.shape[0] - X.shape[1])))
         return self
+
+
+if ENV == 'dev':
+    debug = False # True ??
+    server = app.server # ??
+    # loan_data_inputs_pd_temp = pd.read_csv('D:\Davide\loan_data_inputs_test.csv')
+    file_pd = 'pd_model.sav'
+    file_st_1 = 'lgd_model_stage_1.sav'
+    file_st_2 = 'lgd_model_stage_2.sav'
+    file_ead = 'reg_ead.sav'
+    with open(file_pd, 'rb') as file:
+        reg_pd = pickle.load(file)
+    with open(file_st_1, 'rb') as file:
+        reg_lgd_st_1 = pickle.load(file)
+    with open(file_st_2, 'rb') as file:
+        reg_lgd_st_2 = pickle.load(file)
+    with open(file_ead, 'rb') as file:
+        reg_ead = pickle.load(file)
+
+
+
+else:
+    """server = app.server
+    file_pd = 'https://credit-df.s3.eu-north-1.amazonaws.com/pd_model.sav'
+    file_st_1 = 'https://credit-df.s3.eu-north-1.amazonaws.com/lgd_model_stage_1.sav'
+    file_st_2 = 'https://credit-df.s3.eu-north-1.amazonaws.com/lgd_model_stage_2.sav'
+    file_ead = 'https://credit-df.s3.eu-north-1.amazonaws.com/reg_ead.sav'
+    reg_pd = requests.get(file_pd)
+    reg_lgd_st_1 = requests.get(file_st_1)
+    reg_lgd_st_2 = requests.get(file_st_2)
+    reg_ead = requests.get(file_ead)"""
+    debug = False
 
 
 
@@ -282,14 +301,6 @@ feature_verification = ['Not Verified', 'Source Verified', 'Verified']
 feature_initial_status = ['Fractional', 'Whole']
 feature_grade = ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
-with open(file_pd, 'rb') as file:
-    reg_pd = pickle.load(file)
-with open(file_st_1, 'rb') as file:
-    reg_lgd_st_1 = pickle.load(file)
-with open(file_st_2, 'rb') as file:
-    reg_lgd_st_2 = pickle.load(file)
-with open(file_ead, 'rb') as file:
-    reg_ead = pickle.load(file)
 
 style_data_applicant = {'backgroundColor':'#efefed',
                         'margin':'1%',
@@ -877,7 +888,6 @@ def update_time_slider(value_0, value_1, value_2, value_3, value_4, value_5, val
         PD = round(df['PD'].iloc[-1], ndigits=2)
         LGD = round(df['LGD'].iloc[-1], ndigits=2)
         EAD = round(df['EAD'].iloc[-1])
-        print(df) # ?? debug
     except IndexError:
         pass
 
