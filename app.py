@@ -4,6 +4,7 @@ import pickle
 from sklearn import linear_model
 import scipy.stats as stat
 import model_def
+from model_def import LogisticRegression_with_p_values, LinearRegression
 pd.options.display.max_columns = None
 #import requests
 
