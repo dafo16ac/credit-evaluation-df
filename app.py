@@ -518,19 +518,19 @@ class LogisticRegression_with_p_values:
     pass
 
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
 
-    from model_def import LogisticRegression_with_p_values, LinearRegression
+from model_def import LogisticRegression_with_p_values, LinearRegression
 
-    file_pd = 'pd_model.sav'
-    file_st_1 = 'lgd_model_stage_1.sav'
-    file_st_2 = 'lgd_model_stage_2.sav'
-    file_ead = 'reg_ead.sav'
+file_pd = 'pd_model.sav'
+file_st_1 = 'lgd_model_stage_1.sav'
+file_st_2 = 'lgd_model_stage_2.sav'
+file_ead = 'reg_ead.sav'
 
-    reg_pd = pickle.load(open(file_pd, 'rb'))
-    reg_lgd_st_1 = pickle.load(open(file_st_1, 'rb'))
-    reg_lgd_st_2 = pickle.load(open(file_st_2, 'rb'))
-    reg_ead = pickle.load(open(file_ead, 'rb'))
+reg_pd = pickle.load(open(file_pd, 'rb'))
+reg_lgd_st_1 = pickle.load(open(file_st_1, 'rb'))
+reg_lgd_st_2 = pickle.load(open(file_st_2, 'rb'))
+reg_ead = pickle.load(open(file_ead, 'rb'))
 
 
 
