@@ -321,7 +321,7 @@ app.layout = html.Div(children=[
                   'backgroundColor':'#00005e'}),
 
     html.Div([
-        html.P("Please fill out all the requested fields below in order to have an average estimate of the applicant's EAD, PD, LGD, and EL", id="intro", style=style_output_subtitles,
+        html.P("Please fill out all the fields below in order to have an average estimate of the applicant's EAD, PD, LGD, and EL", id="intro", style=style_output_subtitles,
                className='one row'),
 
         html.Div([html.P("Applicant's full name:", style=style_output_text, className = 'two columns'),
@@ -453,15 +453,18 @@ app.layout = html.Div(children=[
 
     ])
 
+file_pd = 'pd_model.sav'
+file_st_1 = 'lgd_model_stage_1.sav'
+file_st_2 = 'lgd_model_stage_2.sav'
+file_ead = 'reg_ead.sav'
+reg_pd = pickle.load(open(file_pd, 'rb'))
+reg_lgd_st_1 = pickle.load(open(file_st_1, 'rb'))
+reg_lgd_st_2 = pickle.load(open(file_st_2, 'rb'))
+reg_ead = pickle.load(open(file_ead, 'rb'))
+
+
 if __name__ == '__main__':
-    file_pd = 'pd_model.sav'
-    file_st_1 = 'lgd_model_stage_1.sav'
-    file_st_2 = 'lgd_model_stage_2.sav'
-    file_ead = 'reg_ead.sav'
-    reg_pd = pickle.load(open(file_pd, 'rb'))
-    reg_lgd_st_1 = pickle.load(open(file_st_1, 'rb'))
-    reg_lgd_st_2 = pickle.load(open(file_st_2, 'rb'))
-    reg_ead = pickle.load(open(file_ead, 'rb'))
+
     """with open(file_pd, 'rb') as file:
         reg_pd = pickle.load(file)
     with open(file_st_1, 'rb') as file:
