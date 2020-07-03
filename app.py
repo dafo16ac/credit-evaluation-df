@@ -458,14 +458,18 @@ if __name__ == '__main__':
     file_st_1 = 'lgd_model_stage_1.sav'
     file_st_2 = 'lgd_model_stage_2.sav'
     file_ead = 'reg_ead.sav'
-    with open(file_pd, 'rb') as file:
+    reg_pd = pickle.load(open(file_pd, 'rb'))
+    reg_lgd_st_1 = pickle.load(open(file_st_1, 'rb'))
+    reg_lgd_st_2 = pickle.load(open(file_st_2, 'rb'))
+    reg_ead = pickle.load(open(file_ead, 'rb'))
+    """with open(file_pd, 'rb') as file:
         reg_pd = pickle.load(file)
     with open(file_st_1, 'rb') as file:
         reg_lgd_st_1 = pickle.load(file)
     with open(file_st_2, 'rb') as file:
         reg_lgd_st_2 = pickle.load(file)
     with open(file_ead, 'rb') as file:
-        reg_ead = pickle.load(file)
+        reg_ead = pickle.load(file)"""
     app.run_server(debug=debug)
 
 
