@@ -250,6 +250,7 @@ style_data_applicant = {'backgroundColor':'#efefed',
                         'margin-left':'0%',
                         'textAlign': 'left',
                         'fontSize':11,
+                        'color':'black'
                         #'width':'90%'
                          }
 
@@ -451,6 +452,21 @@ app.layout = html.Div(children=[
 
 
     ])
+
+if __name__ == '__main__':
+    file_pd = 'pd_model.sav'
+    file_st_1 = 'lgd_model_stage_1.sav'
+    file_st_2 = 'lgd_model_stage_2.sav'
+    file_ead = 'reg_ead.sav'
+    with open(file_pd, 'rb') as file:
+        reg_pd = pickle.load(file)
+    with open(file_st_1, 'rb') as file:
+        reg_lgd_st_1 = pickle.load(file)
+    with open(file_st_2, 'rb') as file:
+        reg_lgd_st_2 = pickle.load(file)
+    with open(file_ead, 'rb') as file:
+        reg_ead = pickle.load(file)
+    app.run_server(debug=debug)
 
 
 """ CALLBACKS """
@@ -844,18 +860,3 @@ def update_time_slider(value_0, value_1, value_2, value_3, value_4, value_5, val
 
 
 
-
-if __name__ == '__main__':
-    file_pd = 'pd_model.sav'
-    file_st_1 = 'lgd_model_stage_1.sav'
-    file_st_2 = 'lgd_model_stage_2.sav'
-    file_ead = 'reg_ead.sav'
-    with open(file_pd, 'rb') as file:
-        reg_pd = pickle.load(file)
-    with open(file_st_1, 'rb') as file:
-        reg_lgd_st_1 = pickle.load(file)
-    with open(file_st_2, 'rb') as file:
-        reg_lgd_st_2 = pickle.load(file)
-    with open(file_ead, 'rb') as file:
-        reg_ead = pickle.load(file)
-    app.run_server(debug=debug)
