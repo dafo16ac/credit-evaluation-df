@@ -1,4 +1,6 @@
 from sklearn import linear_model
+import numpy as np
+import scipy.stats as stat
 
 class LogisticRegression_with_p_values:
     def __init__(self,*args,**kwargs):#,**kwargs):
