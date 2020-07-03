@@ -899,7 +899,7 @@ def update_time_slider(value_0, value_1, value_2, value_3, value_4, value_5, val
 
     loan_data_inputs_pd_temp = df[features_all_pd]
     loan_data_inputs_pd_temp = loan_data_inputs_pd_temp.drop(ref_categories_pd, axis = 1)
-    df['PD'] = reg_pd.model.predict_proba(loan_data_inputs_pd_temp)[: ][: , 0]
+    df['PD'] = 0 #reg_pd.model.predict_proba(loan_data_inputs_pd_temp)[: ][: , 0]
 
     loan_data_preprocessed_lgd_ead = df[features_all]
     loan_data_preprocessed_lgd_ead = loan_data_preprocessed_lgd_ead.drop(features_reference_cat, axis = 1)
