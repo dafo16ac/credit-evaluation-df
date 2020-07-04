@@ -518,7 +518,14 @@ class LogisticRegression_with_p_values:
 
 
 
-
+file_pd = 'pd_model.sav'
+file_st_1 = 'lgd_model_stage_1.sav'
+file_st_2 = 'lgd_model_stage_2.sav'
+file_ead = 'reg_ead.sav'
+reg_pd = pickle.load(open(file_pd, 'rb'))
+reg_lgd_st_1 = pickle.load(open(file_st_1, 'rb'))
+reg_lgd_st_2 = pickle.load(open(file_st_2, 'rb'))
+reg_ead = pickle.load(open(file_ead, 'rb'))
 
 
 
@@ -928,13 +935,6 @@ def update_time_slider(value_0, value_1, value_2, value_3, value_4, value_5, val
 
 
 if __name__ == '__main__':
-    file_pd = 'pd_model.sav'
-    file_st_1 = 'lgd_model_stage_1.sav'
-    file_st_2 = 'lgd_model_stage_2.sav'
-    file_ead = 'reg_ead.sav'
-    reg_pd = pickle.load(open(file_pd, 'rb'))
-    reg_lgd_st_1 = pickle.load(open(file_st_1, 'rb'))
-    reg_lgd_st_2 = pickle.load(open(file_st_2, 'rb'))
-    reg_ead = pickle.load(open(file_ead, 'rb'))
+
 
     app.run_server(debug=debug)
