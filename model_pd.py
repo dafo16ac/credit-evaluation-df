@@ -4,6 +4,7 @@ import pickle
 from sklearn.linear_model import LogisticRegression
 from sklearn import linear_model
 import scipy.stats as stat
+from class_def import LogisticRegression_with_p_values
 
 loan_data_inputs_train = pd.read_csv('D:\Davide\loan_data_inputs_train.csv', index_col = 0)
 loan_data_targets_train = pd.read_csv('D:\Davide\loan_data_targets_train.csv', index_col = 0, header = None)
@@ -197,30 +198,6 @@ summary_table.index = summary_table.index + 1
 summary_table.loc[0] = ['Intercept', reg.intercept_[0]]
 summary_table = summary_table.sort_index()"""
 
-class LogisticRegression_with_p_values:
-
-    def __init__(self,*args,**kwargs):#,**kwargs):
-        self.model = linear_model.LogisticRegression(*args,**kwargs)#,**args)
-
-    def fit(self,X,y):
-        self.model.fit(X,y)
-
-        #### Get p-values for the fitted model ####
-        denom = (2.0 * (1.0 + np.cosh(self.model.decision_function(X))))
-        denom = np.tile(denom,(X.shape[1],1)).T
-        F_ij = np.dot((X / denom).T,X) ## Fisher Information Matrix
-        Cramer_Rao = np.linalg.inv(F_ij) ## Inverse Information Matrix
-        sigma_estimates = np.sqrt(np.diagonal(Cramer_Rao))
-        z_scores = self.model.coef_[0] / sigma_estimates # z-score for eaach model coefficient
-        p_values = [stat.norm.sf(abs(x)) * 2 for x in z_scores] ### two tailed test for p-values
-
-        self.coef_ = self.model.coef_
-        self.intercept_ = self.model.intercept_
-        #self.z_scores = z_scores
-        self.p_values = p_values
-        #self.sigma_estimates = sigma_estimates
-        #self.F_ij = F_ij
-
 
 """
 #reg = LogisticRegression_with_p_values()
@@ -248,4 +225,4 @@ summary_table2['p_values'] = p_values
 """
 # reg_pd model
 # pickle.dump(reg2, open('pd_model.pkl', 'wb'))
-pickle.dump(reg2, open('pd_model.sav', 'wb'))
+# pickle.dump(reg2, open('pd_model.sav', 'wb'))

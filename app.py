@@ -3,8 +3,7 @@ import numpy as np
 import pickle
 from sklearn import linear_model
 import scipy.stats as stat
-from model_2 import LogisticRegression_with_p_values, LinearRegression
-from model_pd import LogisticRegression_with_p_values
+from class_def import LogisticRegression_with_p_values, LinearRegression
 pd.options.display.max_columns = None
 
 import dash
