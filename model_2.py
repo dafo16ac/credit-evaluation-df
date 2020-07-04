@@ -109,7 +109,7 @@ lgd_inputs_stage_1_train = lgd_inputs_stage_1_train.drop(features_reference_cat,
 
 reg_lgd_st_1 = LogisticRegression_with_p_values()
 reg_lgd_st_1.fit(lgd_inputs_stage_1_train, lgd_targets_stage_1_train)
-pickle.dump(reg_lgd_st_1, open('lgd_model_stage_1.sav', 'wb'))
+# pickle.dump(reg_lgd_st_1, open('lgd_model_stage_1.sav', 'wb'))
 # pickle.dump(reg_lgd_st_1, open('lgd_model_stage_1.pkl', 'wb'))
 
 """
@@ -150,7 +150,7 @@ lgd_inputs_stage_2_train = lgd_inputs_stage_2_train[features_all]
 lgd_inputs_stage_2_train = lgd_inputs_stage_2_train.drop(features_reference_cat, axis = 1)
 reg_lgd_st_2 = LinearRegression()
 reg_lgd_st_2.fit(lgd_inputs_stage_2_train, lgd_targets_stage_2_train)
-pickle.dump(reg_lgd_st_2, open('lgd_model_stage_2.sav', 'wb'))
+# pickle.dump(reg_lgd_st_2, open('lgd_model_stage_2.sav', 'wb'))
 # pickle.dump(reg_lgd_st_2, open('lgd_model_stage_2.pkl', 'wb'))
 
 
@@ -161,4 +161,4 @@ ead_inputs_train = ead_inputs_train.drop(features_reference_cat, axis = 1)
 reg_ead = LinearRegression()
 reg_ead.fit(ead_inputs_train, ead_targets_train)
 # pickle.dump(reg_ead, open('reg_ead.pkl', 'wb'))
-pickle.dump(reg_ead, open('reg_ead.sav', 'wb'))
+# pickle.dump(reg_ead, open('reg_ead.sav', 'wb'))
