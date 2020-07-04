@@ -3,8 +3,8 @@ import numpy as np
 import pickle
 from sklearn import linear_model
 import scipy.stats as stat
-import model_def
-from model_def import LogisticRegression_with_p_values, LinearRegression
+from model_2 import LogisticRegression_with_p_values, LinearRegression
+from model_pd import LogisticRegression_with_p_values
 pd.options.display.max_columns = None
 
 import dash
@@ -460,7 +460,7 @@ app.layout = html.Div(children=[
                               multi=False, style= style_assumptions, className = 'five columns')],
                  className='one row'),
 
-        html.Div([html.P("N° of months since the loan has been issued:", style=style_assumptions_text, className = 'six columns'), # delete, and leave 0 per default ??
+        html.Div([html.P("N° of months since the loan has been issued:", style=style_assumptions_text, className = 'six columns'), # delete, and leave 0 per default  - or add "total_rec_prncp" as assumption??
                  dcc.Input(id="assumption_4", type="number", placeholder="Type n° months", style= style_assumptions, className = 'five columns')],
                  className='one row'),
 
@@ -521,16 +521,16 @@ class LogisticRegression_with_p_values:
 
 
 
-if __name__ == '__main__':
-    file_pd = 'pd_model.sav'
-    file_st_1 = 'lgd_model_stage_1.sav'
-    file_st_2 = 'lgd_model_stage_2.sav'
-    file_ead = 'reg_ead.sav'
+#if __name__ == '__main__':
+file_pd = 'pd_model.sav'
+file_st_1 = 'lgd_model_stage_1.sav'
+file_st_2 = 'lgd_model_stage_2.sav'
+file_ead = 'reg_ead.sav'
 
-    reg_pd = pickle.load(open(file_pd, 'rb'))
-    reg_lgd_st_1 = pickle.load(open(file_st_1, 'rb'))
-    reg_lgd_st_2 = pickle.load(open(file_st_2, 'rb'))
-    reg_ead = pickle.load(open(file_ead, 'rb'))
+reg_pd = pickle.load(open(file_pd, 'rb'))
+reg_lgd_st_1 = pickle.load(open(file_st_1, 'rb'))
+reg_lgd_st_2 = pickle.load(open(file_st_2, 'rb'))
+reg_ead = pickle.load(open(file_ead, 'rb'))
 
 
 
