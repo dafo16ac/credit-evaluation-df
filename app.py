@@ -1,34 +1,31 @@
 import pandas as pd
 import numpy as np
 import pickle
+from class_def import LogisticRegression_with_p_values, LinearRegression
 from sklearn import linear_model
 import scipy.stats as stat
-from class_def import LogisticRegression_with_p_values, LinearRegression
-pd.options.display.max_columns = None
-
 import dash
 import dash_core_components as dcc
 from textwrap import dedent
-#import plotly.graph_objs as go
 from dash.dependencies import Input, Output, State
 import dash_html_components as html
 
-ENV = 'dev'
-external_stylesheets = ['https://codepen.io/davifoga/pen/jOWYyyG.css']
+external_stylesheets = ['assets/app_layout.css']  #['https://codepen.io/davifoga/pen/jOWYyyG.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-
-from sklearn import linear_model
-import numpy as np
-import scipy.stats as stat
+ENV = 'prod'
+if ENV == 'dev':
+    debug = True
+else:
+    debug = False
+    server = app.server
 
 class LogisticRegression_with_p_values:
-    def __init__(self,*args,**kwargs):#,**kwargs):
-        self.model = linear_model.LogisticRegression(*args,**kwargs)#,**args)
+    def __init__(self,*args,**kwargs):
+        self.model = linear_model.LogisticRegression(*args,**kwargs)
 
     def fit(self,X,y):
         self.model.fit(X,y)
-        #### Get p-values for the fitted model ####
         denom = (2.0 * (1.0 + np.cosh(self.model.decision_function(X))))
         denom = np.tile(denom,(X.shape[1],1)).T
         F_ij = np.dot((X / denom).T,X) ## Fisher Information Matrix
@@ -38,25 +35,12 @@ class LogisticRegression_with_p_values:
         p_values = [stat.norm.sf(abs(x)) * 2 for x in z_scores] ### two tailed test for p-values
         self.coef_ = self.model.coef_
         self.intercept_ = self.model.intercept_
-        #self.z_scores = z_scores
         self.p_values = p_values
-        #self.sigma_estimates = sigma_estimates
-        #self.F_ij = F_ij
 
-# By typing the code below we will ovewrite a part of the class with one that includes p-values
-# Here's the full source code of the ORIGINAL class: https://github.com/scikit-learn/scikit-learn/blob/7b136e9/sklearn/linear_model/base.py#L362
+class LogisticRegression_with_p_values: # ?? don't touch it haha
+    pass
+
 class LinearRegression(linear_model.LinearRegression):
-    """
-    LinearRegression class after sklearn's, but calculate t-statistics
-    and p-values for model coefficients (betas).
-    Additional attributes available after .fit()
-    are `t` and `p` which are of the shape (y.shape[1], X.shape[1])
-    which is (n_features, n_coefs)
-    This class sets the intercept to 0 by default, since usually we include it
-    in X.
-    """
-
-    # nothing changes in __init__
     def __init__(self, fit_intercept=True, normalize=False, copy_X=True,
                  n_jobs=1):
         self.fit_intercept = fit_intercept
@@ -64,232 +48,185 @@ class LinearRegression(linear_model.LinearRegression):
         self.copy_X = copy_X
         self.n_jobs = n_jobs
 
-
     def fit(self, X, y, n_jobs=1):
-        self = super(LinearRegression, self).fit(X, y, n_jobs)
-
-        # Calculate SSE (sum of squared errors)
-        # and SE (standard error)
         sse = np.sum((self.predict(X) - y) ** 2, axis=0) / float(X.shape[0] - X.shape[1])
         se = np.array([np.sqrt(np.diagonal(sse * np.linalg.inv(np.dot(X.T, X))))])
-
-        # compute the t-statistic for each feature
         self.t = self.coef_ / se
-        # find the p-value for each feature
         self.p = np.squeeze(2 * (1 - stat.t.cdf(np.abs(self.t), y.shape[0] - X.shape[1])))
         return self
 
-
-
-if ENV == 'dev':
-    debug = True # True ??
-    server = app.server # ??
-    # loan_data_inputs_pd_temp = pd.read_csv('D:\Davide\loan_data_inputs_test.csv')
-    """file_pd = 'pd_model.sav'
-    file_st_1 = 'lgd_model_stage_1.sav'
-    file_st_2 = 'lgd_model_stage_2.sav'
-    file_ead = 'reg_ead.sav'
-    reg_pd = pickle.load(open(file_pd, 'rb'))
-    reg_lgd_st_1 = pickle.load(open(file_st_1, 'rb'))
-    reg_lgd_st_2 = pickle.load(open(file_st_2, 'rb'))
-    reg_ead = pickle.load(open(file_ead, 'rb'))
-"""
-    """"""
-
-
-
-else:
-    """server = app.server
-    file_pd = 'https://credit-df.s3.eu-north-1.amazonaws.com/pd_model.sav'
-    file_st_1 = 'https://credit-df.s3.eu-north-1.amazonaws.com/lgd_model_stage_1.sav'
-    file_st_2 = 'https://credit-df.s3.eu-north-1.amazonaws.com/lgd_model_stage_2.sav'
-    file_ead = 'https://credit-df.s3.eu-north-1.amazonaws.com/reg_ead.sav'
-    reg_pd = requests.get(file_pd)
-    reg_lgd_st_1 = requests.get(file_st_1)
-    reg_lgd_st_2 = requests.get(file_st_2)
-    reg_ead = requests.get(file_ead)"""
-    debug = False
-
-
-
 features_all_pd = ['grade:A',
-'grade:B',
-'grade:C',
-'grade:D',
-'grade:E',
-'grade:F',
-'grade:G',
-'home_ownership:RENT_OTHER_NONE_ANY',
-'home_ownership:OWN',
-'home_ownership:MORTGAGE',
-'addr_state:ND_NE_IA_NV_FL_HI_AL',
-'addr_state:NM_VA',
-'addr_state:NY',
-'addr_state:OK_TN_MO_LA_MD_NC',
-'addr_state:CA',
-'addr_state:UT_KY_AZ_NJ',
-'addr_state:AR_MI_PA_OH_MN',
-'addr_state:RI_MA_DE_SD_IN',
-'addr_state:GA_WA_OR',
-'addr_state:WI_MT',
-'addr_state:TX',
-'addr_state:IL_CT',
-'addr_state:KS_SC_CO_VT_AK_MS',
-'addr_state:WV_NH_WY_DC_ME_ID',
-'verification_status:Not Verified',
-'verification_status:Source Verified',
-'verification_status:Verified',
-'purpose:educ__sm_b__wedd__ren_en__mov__house',
-'purpose:credit_card',
-'purpose:debt_consolidation',
-'purpose:oth__med__vacation',
-'purpose:major_purch__car__home_impr',
-'initial_list_status:f',
-'initial_list_status:w',
-'term:36',
-'term:60',
-'emp_length:0',
-'emp_length:1',
-'emp_length:2-4',
-'emp_length:5-6',
-'emp_length:7-9',
-'emp_length:10',
-'mths_since_issue_d:<38',
-'mths_since_issue_d:38-39',
-'mths_since_issue_d:40-41',
-'mths_since_issue_d:42-48',
-'mths_since_issue_d:49-52',
-'mths_since_issue_d:53-64',
-'mths_since_issue_d:65-84',
-'mths_since_issue_d:>84',
-'int_rate:<9.548',
-'int_rate:9.548-12.025',
-'int_rate:12.025-15.74',
-'int_rate:15.74-20.281',
-'int_rate:>20.281',
-'mths_since_earliest_cr_line:<140',
-'mths_since_earliest_cr_line:141-164',
-'mths_since_earliest_cr_line:165-247',
-'mths_since_earliest_cr_line:248-270',
-'mths_since_earliest_cr_line:271-352',
-'mths_since_earliest_cr_line:>352',
-'inq_last_6mths:0',
-'inq_last_6mths:1-2',
-'inq_last_6mths:3-6',
-'inq_last_6mths:>6',
-'acc_now_delinq:0',
-'acc_now_delinq:>=1',
-'annual_inc:<20K',
-'annual_inc:20K-30K',
-'annual_inc:30K-40K',
-'annual_inc:40K-50K',
-'annual_inc:50K-60K',
-'annual_inc:60K-70K',
-'annual_inc:70K-80K',
-'annual_inc:80K-90K',
-'annual_inc:90K-100K',
-'annual_inc:100K-120K',
-'annual_inc:120K-140K',
-'annual_inc:>140K',
-'dti:<=1.4',
-'dti:1.4-3.5',
-'dti:3.5-7.7',
-'dti:7.7-10.5',
-'dti:10.5-16.1',
-'dti:16.1-20.3',
-'dti:20.3-21.7',
-'dti:21.7-22.4',
-'dti:22.4-35',
-'dti:>35',
-'mths_since_last_delinq:Missing',
-'mths_since_last_delinq:0-3',
-'mths_since_last_delinq:4-30',
-'mths_since_last_delinq:31-56',
-'mths_since_last_delinq:>=57',
-'mths_since_last_record:Missing',
-'mths_since_last_record:0-2',
-'mths_since_last_record:3-20',
-'mths_since_last_record:21-31',
-'mths_since_last_record:32-80',
-'mths_since_last_record:81-86',
-'mths_since_last_record:>86']
-
+                   'grade:B',
+                'grade:C',
+                'grade:D',
+                'grade:E',
+                'grade:F',
+                'grade:G',
+                'home_ownership:RENT_OTHER_NONE_ANY',
+                'home_ownership:OWN',
+                'home_ownership:MORTGAGE',
+                'addr_state:ND_NE_IA_NV_FL_HI_AL',
+                'addr_state:NM_VA',
+                'addr_state:NY',
+                'addr_state:OK_TN_MO_LA_MD_NC',
+                'addr_state:CA',
+                'addr_state:UT_KY_AZ_NJ',
+                'addr_state:AR_MI_PA_OH_MN',
+                'addr_state:RI_MA_DE_SD_IN',
+                'addr_state:GA_WA_OR',
+                'addr_state:WI_MT',
+                'addr_state:TX',
+                'addr_state:IL_CT',
+                'addr_state:KS_SC_CO_VT_AK_MS',
+                'addr_state:WV_NH_WY_DC_ME_ID',
+                'verification_status:Not Verified',
+                'verification_status:Source Verified',
+                'verification_status:Verified',
+                'purpose:educ__sm_b__wedd__ren_en__mov__house',
+                'purpose:credit_card',
+                'purpose:debt_consolidation',
+                'purpose:oth__med__vacation',
+                'purpose:major_purch__car__home_impr',
+                'initial_list_status:f',
+                'initial_list_status:w',
+                'term:36',
+                'term:60',
+                'emp_length:0',
+                'emp_length:1',
+                'emp_length:2-4',
+                'emp_length:5-6',
+                'emp_length:7-9',
+                'emp_length:10',
+                'mths_since_issue_d:<38',
+                'mths_since_issue_d:38-39',
+                'mths_since_issue_d:40-41',
+                'mths_since_issue_d:42-48',
+                'mths_since_issue_d:49-52',
+                'mths_since_issue_d:53-64',
+                'mths_since_issue_d:65-84',
+                'mths_since_issue_d:>84',
+                'int_rate:<9.548',
+                'int_rate:9.548-12.025',
+                'int_rate:12.025-15.74',
+                'int_rate:15.74-20.281',
+                'int_rate:>20.281',
+                'mths_since_earliest_cr_line:<140',
+                'mths_since_earliest_cr_line:141-164',
+                'mths_since_earliest_cr_line:165-247',
+                'mths_since_earliest_cr_line:248-270',
+                'mths_since_earliest_cr_line:271-352',
+                'mths_since_earliest_cr_line:>352',
+                'inq_last_6mths:0',
+                'inq_last_6mths:1-2',
+                'inq_last_6mths:3-6',
+                'inq_last_6mths:>6',
+                'acc_now_delinq:0',
+                'acc_now_delinq:>=1',
+                'annual_inc:<20K',
+                'annual_inc:20K-30K',
+                'annual_inc:30K-40K',
+                'annual_inc:40K-50K',
+                'annual_inc:50K-60K',
+                'annual_inc:60K-70K',
+                'annual_inc:70K-80K',
+                'annual_inc:80K-90K',
+                'annual_inc:90K-100K',
+                'annual_inc:100K-120K',
+                'annual_inc:120K-140K',
+                'annual_inc:>140K',
+                'dti:<=1.4',
+                'dti:1.4-3.5',
+                'dti:3.5-7.7',
+                'dti:7.7-10.5',
+                'dti:10.5-16.1',
+                'dti:16.1-20.3',
+                'dti:20.3-21.7',
+                'dti:21.7-22.4',
+                'dti:22.4-35',
+                'dti:>35',
+                'mths_since_last_delinq:Missing',
+                'mths_since_last_delinq:0-3',
+                'mths_since_last_delinq:4-30',
+                'mths_since_last_delinq:31-56',
+                'mths_since_last_delinq:>=57',
+                'mths_since_last_record:Missing',
+                'mths_since_last_record:0-2',
+                'mths_since_last_record:3-20',
+                'mths_since_last_record:21-31',
+                'mths_since_last_record:32-80',
+                'mths_since_last_record:81-86',
+                'mths_since_last_record:>86']
 ref_categories_pd = ['grade:G',
-'home_ownership:RENT_OTHER_NONE_ANY',
-'addr_state:ND_NE_IA_NV_FL_HI_AL',
-'verification_status:Verified',
-'purpose:educ__sm_b__wedd__ren_en__mov__house',
-'initial_list_status:f',
-'term:60',
-'emp_length:0',
-'mths_since_issue_d:>84',
-'int_rate:>20.281',
-'mths_since_earliest_cr_line:<140',
-'inq_last_6mths:>6',
-'acc_now_delinq:0',
-'annual_inc:<20K',
-'dti:>35',
-'mths_since_last_delinq:0-3',
-'mths_since_last_record:0-2']
-
+                    'home_ownership:RENT_OTHER_NONE_ANY',
+                    'addr_state:ND_NE_IA_NV_FL_HI_AL',
+                    'verification_status:Verified',
+                    'purpose:educ__sm_b__wedd__ren_en__mov__house',
+                    'initial_list_status:f',
+                    'term:60',
+                    'emp_length:0',
+                    'mths_since_issue_d:>84',
+                    'int_rate:>20.281',
+                    'mths_since_earliest_cr_line:<140',
+                    'inq_last_6mths:>6',
+                    'acc_now_delinq:0',
+                    'annual_inc:<20K',
+                    'dti:>35',
+                    'mths_since_last_delinq:0-3',
+                    'mths_since_last_record:0-2']
 features_all = ['grade:A',
-'grade:B',
-'grade:C',
-'grade:D',
-'grade:E',
-'grade:F',
-'grade:G',
-'home_ownership:MORTGAGE',
-'home_ownership:NONE',
-'home_ownership:OTHER',
-'home_ownership:OWN',
-'home_ownership:RENT',
-'verification_status:Not Verified',
-'verification_status:Source Verified',
-'verification_status:Verified',
-'purpose:car',
-'purpose:credit_card',
-'purpose:debt_consolidation',
-'purpose:educational',
-'purpose:home_improvement',
-'purpose:house',
-'purpose:major_purchase',
-'purpose:medical',
-'purpose:moving',
-'purpose:other',
-'purpose:renewable_energy',
-'purpose:small_business',
-'purpose:vacation',
-'purpose:wedding',
-'initial_list_status:f',
-'initial_list_status:w',
-'term_int',
-'emp_length_int',
-'mths_since_issue_d',
-'mths_since_earliest_cr_line',
-'funded_amnt',
-'int_rate',
-'installment',
-'annual_inc',
-'dti',
-'delinq_2yrs',
-'inq_last_6mths',
-'mths_since_last_delinq',
-'mths_since_last_record',
-'open_acc',
-'pub_rec',
-'total_acc',
-'acc_now_delinq',
-'total_rev_hi_lim']
-# List of all independent variables for the models.
-
+                'grade:B',
+                'grade:C',
+                'grade:D',
+                'grade:E',
+                'grade:F',
+                'grade:G',
+                'home_ownership:MORTGAGE',
+                'home_ownership:NONE',
+                'home_ownership:OTHER',
+                'home_ownership:OWN',
+                'home_ownership:RENT',
+                'verification_status:Not Verified',
+                'verification_status:Source Verified',
+                'verification_status:Verified',
+                'purpose:car',
+                'purpose:credit_card',
+                'purpose:debt_consolidation',
+                'purpose:educational',
+                'purpose:home_improvement',
+                'purpose:house',
+                'purpose:major_purchase',
+                'purpose:medical',
+                'purpose:moving',
+                'purpose:other',
+                'purpose:renewable_energy',
+                'purpose:small_business',
+                'purpose:vacation',
+                'purpose:wedding',
+                'initial_list_status:f',
+                'initial_list_status:w',
+                'term_int',
+                'emp_length_int',
+                'mths_since_issue_d',
+                'mths_since_earliest_cr_line',
+                'funded_amnt',
+                'int_rate',
+                'installment',
+                'annual_inc',
+                'dti',
+                'delinq_2yrs',
+                'inq_last_6mths',
+                'mths_since_last_delinq',
+                'mths_since_last_record',
+                'open_acc',
+                'pub_rec',
+                'total_acc',
+                'acc_now_delinq',
+                'total_rev_hi_lim']
 features_reference_cat = ['grade:G',
-'home_ownership:RENT',
-'verification_status:Verified',
-'purpose:credit_card',
-'initial_list_status:f']
-# List of the dummy variable reference categories.
-
+                        'home_ownership:RENT',
+                        'verification_status:Verified',
+                        'purpose:credit_card',
+                        'initial_list_status:f']
 features = features_all + features_all_pd
 features = np.array(features)
 features = list(np.unique(features))
@@ -487,8 +424,8 @@ app.layout = html.Div(children=[
                  dcc.Input(id="assumption_10", type="number", placeholder="Type n°", style= style_assumptions, className = 'five columns')],
                  className='one row'),
 
-        html.Div([html.P("Number of months since the last public record:", style=style_assumptions_text, className = 'six columns'),
-                 dcc.Input(id="assumption_11", type="number", placeholder="Type n° months", style= style_assumptions, className = 'five columns')],
+        html.Div([html.P("Number of months since the last public record:",style=style_assumptions_text,className='six columns'),
+                 dcc.Input(id="assumption_11", type="number", placeholder="Type n° months", style=style_assumptions, className = 'five columns')],
                  className='one row'),
 
         html.Div([html.P("Number of open credit lines in the applicant's credit file:", style=style_assumptions_text, className = 'six columns'),
@@ -509,28 +446,18 @@ app.layout = html.Div(children=[
 
     ], style={'margin':'3%'}, className='five columns'),
 
-
-
     ])
 
-class LogisticRegression_with_p_values:
-    pass
 
 
-
-file_pd = 'pd_model.sav'
-file_st_1 = 'lgd_model_stage_1.sav'
-file_st_2 = 'lgd_model_stage_2.sav'
-file_ead = 'reg_ead.sav'
+file_pd = 'models/pd_model.sav'
+file_st_1 = 'models/lgd_model_stage_1.sav'
+file_st_2 = 'models/lgd_model_stage_2.sav'
+file_ead = 'models/reg_ead.sav'
 reg_pd = pickle.load(open(file_pd, 'rb'))
 reg_lgd_st_1 = pickle.load(open(file_st_1, 'rb'))
 reg_lgd_st_2 = pickle.load(open(file_st_2, 'rb'))
 reg_ead = pickle.load(open(file_ead, 'rb'))
-
-
-
-
-
 
 """ with open(file_pd, 'rb') as file:
         reg_pd = pickle.load(file)
@@ -636,7 +563,7 @@ def update_time_slider(value_0, value_1, value_2, value_3, value_4, value_5, val
             df['term:36'] = np.where((df['term:36'] == 0), 1, 0)
         elif value_3 == '60':
             df['term:60'] = np.where((df['term:60'] == 0), 1, 0)
-        df['term_int'] = np.where((df['term_int'] == 0), value_3, 0) # ??
+        df['term_int'] = np.where((df['term_int'] == 0), value_3, 0)
     except TypeError:
         pass
 
@@ -665,7 +592,7 @@ def update_time_slider(value_0, value_1, value_2, value_3, value_4, value_5, val
             df['annual_inc:120K-140K'] = np.where((df['annual_inc:120K-140K'] == 0), 1, 0)
         elif value_4 > 140000:
             df['annual_inc:>140K'] = np.where((df['annual_inc:>140K'] == 0), 1, 0)
-        df['annual_inc'] = np.where((df['annual_inc'] == 0), value_4, 0) # ??
+        df['annual_inc'] = np.where((df['annual_inc'] == 0), value_4, 0)
     except TypeError:
         pass
 
@@ -682,7 +609,7 @@ def update_time_slider(value_0, value_1, value_2, value_3, value_4, value_5, val
             df['emp_length:7-9'] = np.where((df['emp_length:7-9'] == 0), 1, 0)
         elif value_5 >= 10:
             df['emp_length:10'] = np.where((df['emp_length:10'] == 0), 1, 0)
-        df['emp_length_int'] = np.where((df['emp_length_int'] == 0), value_5, 0) # ??
+        df['emp_length_int'] = np.where((df['emp_length_int'] == 0), value_5, 0)
     except TypeError:
         pass
 
@@ -837,7 +764,7 @@ def update_time_slider(value_0, value_1, value_2, value_3, value_4, value_5, val
     try:
         df['acc_now_delinq:0'] = np.where((assumption_8 == 0), 1, 0)
         df['acc_now_delinq:>=1'] = np.where((assumption_8 >= 1), 1, 0)
-        df['acc_now_delinq'] = np.where((df['acc_now_delinq'] == 0), assumption_8, 0) # possibilmente potrebbe dover essre rewrite ??
+        df['acc_now_delinq'] = np.where((df['acc_now_delinq'] == 0), assumption_8, 0)
     except TypeError:
         pass
 
@@ -856,7 +783,7 @@ def update_time_slider(value_0, value_1, value_2, value_3, value_4, value_5, val
         pass
 
     try:
-        df['delinq_2yrs'] = np.where((df['delinq_2yrs'] == 0), assumption_10, 0) # possibilmente potrebbe dover essre rewrite ??
+        df['delinq_2yrs'] = np.where((df['delinq_2yrs'] == 0), assumption_10, 0)
     except TypeError:
         pass
 
@@ -879,22 +806,22 @@ def update_time_slider(value_0, value_1, value_2, value_3, value_4, value_5, val
         pass
 
     try:
-        df['open_acc'] = np.where((df['open_acc'] == 0), assumption_12, 0) # possibilmente potrebbe dover essre rewrite ??
+        df['open_acc'] = np.where((df['open_acc'] == 0), assumption_12, 0)
     except TypeError:
         pass
 
     try:
-        df['pub_rec'] = np.where((df['pub_rec'] == 0), assumption_13, 0) # possibilmente potrebbe dover essre rewrite ??
+        df['pub_rec'] = np.where((df['pub_rec'] == 0), assumption_13, 0)
     except TypeError:
         pass
 
     try:
-        df['total_acc'] = np.where((df['total_acc'] == 0), assumption_14, 0) # possibilmente potrebbe dover essre rewrite ??
+        df['total_acc'] = np.where((df['total_acc'] == 0), assumption_14, 0)
     except TypeError:
         pass
 
     try:
-        df['total_rev_hi_lim'] = np.where((df['total_rev_hi_lim'] == 0), assumption_15, 0) # possibilmente potrebbe dover essre rewrite ??
+        df['total_rev_hi_lim'] = np.where((df['total_rev_hi_lim'] == 0), assumption_15, 0)
     except TypeError:
         pass
 
@@ -932,9 +859,5 @@ def update_time_slider(value_0, value_1, value_2, value_3, value_4, value_5, val
 
     return expected_loss, PD, lgd, ead
 
-
-
 if __name__ == '__main__':
-
-
     app.run_server(debug=debug)
